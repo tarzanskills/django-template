@@ -1,0 +1,40 @@
+version: '3.4'
+
+x-defaults: &defaults
+  restart: unless-stopped
+  build: .
+  depends_on:
+    - web
+    - redis
+    - memcached
+    
+services:
+  redis:
+    restart: unless-stopped
+    image: redis:3.2-alpine
+    
+  memcached:
+    restart: unless-stopped
+    image: memcached:1.4
+    
+  web:
+    restart: unless-stopped
+    build: .
+    environment:
+      ENV: 'DEV'
+    depends_on:
+      - memcached
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/backend
+      
+  nginx:
+    restart: unless-stopped
+    build: ./nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/backend
